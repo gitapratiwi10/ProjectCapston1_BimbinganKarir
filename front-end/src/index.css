@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.scrollbar-hidden::-webkit-scrollbar {
+    display: none; /* Menyembunyikan scrollbar di Chrome, Edge, dan Safari */
+  }
+  .scrollbar-hidden {
+    -ms-overflow-style: none; /* Menyembunyikan scrollbar di Internet Explorer */
+    scrollbar-width: none; /* Menyembunyikan scrollbar di Firefox */
+  }
