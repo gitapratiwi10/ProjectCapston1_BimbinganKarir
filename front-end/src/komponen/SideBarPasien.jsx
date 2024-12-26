@@ -1,11 +1,29 @@
-import { NavLink } from "react-router-dom";
-import { FaHome, FaUser, FaRegFileAlt, FaSignOutAlt } from "react-icons/fa";
+import { NavLink, useNavigate } from "react-router-dom";
+import { FaUser, FaRegFileAlt, FaSignOutAlt } from "react-icons/fa";
+import { useEffect, useState } from "react";
 
 const SideBarPasien = () => {
+  const navigate = useNavigate();
+  const [patientData, setPatientData] = useState(null);
+
+  useEffect(() => {
+    const storedPatient = localStorage.getItem("pasien");
+    if (!storedPatient) {
+      navigate("/login"); // Redirect jika data pasien tidak ditemukan
+    } else {
+      setPatientData(JSON.parse(storedPatient));
+    }
+  }, [navigate]);
+
+  if (!patientData) {
+    return null; // Sidebar tidak dirender sampai data pasien tersedia
+  }
+
+  const patientId = patientData.id;
+
   const menuItems = [
-    { name: "Dashboard", path: "/", icon: <FaHome /> },
-    { name: "Profil", path: "/profil", icon: <FaUser /> },
-    { name: "Rekam Medis", path: "/rekam-medis", icon: <FaRegFileAlt /> },
+    { name: "Profil", path: `/pasien/${patientId}/profil`, icon: <FaUser /> },
+    { name: "Daftar Poli", path: `/pasien/${patientId}/Daftar-Poli`, icon: <FaRegFileAlt /> },
   ];
 
   return (

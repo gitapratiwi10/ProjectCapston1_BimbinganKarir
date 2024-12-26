@@ -14,4 +14,11 @@ class Pasien extends Model
     protected $fillable = ['nama', 'alamat', 'no_ktp', 'no_hp', 'no_rm', 'password'];
 
     protected $hidden = ['password']; // Sembunyikan password saat serialisasi
+
+    public function dokter()
+{
+    return $this->belongsTo(Dokter::class, 'dokter_id');
+}
+
+
 }

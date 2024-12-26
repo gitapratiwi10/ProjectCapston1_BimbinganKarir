@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const AdminPasien = () => {
   const [pasiens, setPasiens] = useState([]);
@@ -135,13 +137,13 @@ const AdminPasien = () => {
                         onClick={() => openEditModal(pasien)}
                         className="px-3 py-1 text-white bg-yellow-500 rounded hover:bg-yellow-600 mr-2"
                       >
-                        Edit
+                        <FontAwesomeIcon icon={faEdit} />
                       </button>
                       <button
                         onClick={() => handleDelete(pasien.id)}
                         className="px-3 py-1 text-white bg-red-500 rounded hover:bg-red-600"
                       >
-                        Hapus
+                       <FontAwesomeIcon icon={faTrash} />
                       </button>
                     </td>
                   </tr>

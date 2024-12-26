@@ -20,5 +20,13 @@ class Dokter extends Model
         return $this->belongsTo(Poli::class, 'id_poli');
     }
 
-    // Hash password secara otomatis
+    public function jadwalPeriksa()
+    {
+        return $this->hasMany(JadwalPeriksa::class, 'id_dokter');
+    }
+
+    public function pasien()
+    {
+        return $this->hasMany(Pasien::class, 'dokter_id');
+    }
 }

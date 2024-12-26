@@ -30,7 +30,6 @@ const Login = () => {
 
       if (response.status === 200 && response.data.user) {
         const user = response.data.user;
-        const role = formData.role;
 
         // Simpan data pengguna di localStorage
         localStorage.setItem("user", JSON.stringify(user));
@@ -42,9 +41,9 @@ const Login = () => {
         } else if (formData.role === "dokter") {
           localStorage.setItem("dokter", JSON.stringify(response.data.user)); // Simpan data dokter
           console.log("Data dokter disimpan:", response.data.user);
-          navigate(`/dashboard-dokter/${response.data.user.id}`); // Pindah ke halaman dashboard dokter
+          navigate(`/dokter/${response.data.user.id}/profil`); // Pindah ke halaman dashboard dokter
          // Halaman dashboard dokter dengan ID dokter
-        }
+         }
       } else {
         setMessage("Login gagal atau data tidak ditemukan.");
       }

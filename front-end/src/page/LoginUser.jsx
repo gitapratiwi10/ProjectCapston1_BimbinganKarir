@@ -46,7 +46,7 @@ const LoginUser = () => {
         setUserData(response.data.pasien);
         localStorage.setItem("pasien", JSON.stringify(response.data.pasien));
         setMessage(`Login berhasil! Selamat datang, ${response.data.pasien.nama}`);
-        navigate(`/dashboardpasien/${response.data.pasien.id}`);
+        navigate(`/pasien/${response.data.pasien.id}/profil`);
       } else {
         setMessage(response.data.message || "Login gagal.");
       }
