@@ -42,6 +42,16 @@ class JadwalPeriksaController extends Controller
     ]);
 
     try {
+
+        $existingJadwal = JadwalPeriksa::where('id_dokter', $validatedData['id_dokter'])
+        ->where('hari', $validatedData['hari'])
+        ->first();
+
+        if($existingJadwal){
+            return response()->json(['error' => 'Hari sama sudah terdaftar'], 400);
+        }
+
+
         if ($validatedData['status'] === 'aktif') {
             // Ubah semua jadwal aktif dari dokter yang sama menjadi tidak aktif
             JadwalPeriksa::where('id_dokter', $validatedData['id_dokter'])

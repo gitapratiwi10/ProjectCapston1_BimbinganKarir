@@ -12,12 +12,23 @@ const JadwalPeriksa = () => {
     hari: "",
     jam_mulai: "",
     jam_selesai: "",
-    status: "aktif",
+    status: "",
   });
   const [isAdding, setIsAdding] = useState(false);
   const [selectedJadwal, setSelectedJadwal] = useState(null);
   const [popup, setPopup] = useState({ message: "", type: "", visible: false });
 
+ 
+
+  const showPopup = (message, type) => {
+    setPopup({ message, type, visible: true });
+
+    const timeoutId = setTimeout(() => {
+      setPopup((prev) => ({ ...prev, visible: false }));
+    }, 3000);
+
+    return () => clearTimeout(timeoutId);
+  };
 
   const loadDokterData = () => {
     const storedDokter = localStorage.getItem("dokter");
@@ -49,30 +60,54 @@ const JadwalPeriksa = () => {
   };
 
   const resetForm = () => {
-    setForm({ hari: "", jam_mulai: "", jam_selesai: "", status: "aktif" });
+    setForm({ hari: "", jam_mulai: "", jam_selesai: "", status: "" });
     setSelectedJadwal(null);
   };
 
   const handleAddJadwal = async (e) => {
     e.preventDefault();
+    const isHariConflict = jadwal.some(
+      (item) => item.hari.toLowerCase() === form.hari.toLowerCase()
+    );
+    if (isHariConflict) {
+      showPopup("Hari ini sudah memiliki jadwal. Pilih hari lain.", "error");
+      setIsAdding(false); // Tutup form meskipun error
+      return;
+    }
     if (form.jam_mulai >= form.jam_selesai) {
       showPopup("Jam selesai harus lebih besar dari jam mulai.", "error");
+      setIsAdding(false); // Tutup form meskipun error
       return;
     }
     try {
-      console.log("Data yang dikirim:", { ...form, id_dokter: dokter.id });
       await axios.post("/jadwal-periksa", {
         ...form,
         id_dokter: dokter.id,
       });
-      await fetchJadwal(); // Fetch ulang data setelah berhasil menambahkan
+      await fetchJadwal(); 
       resetForm();
-      setIsAdding(false); // Tutup form setelah berhasil
+      setIsAdding(false); 
       showPopup("Jadwal berhasil ditambahkan!", "success");
     } catch (err) {
-      console.error("Kesalahan saat menambahkan jadwal:", err.response?.data || err.message);
-      showPopup(err.response?.data?.message || "Gagal menambahkan jadwal. Silakan coba lagi.", "error");
+      const errorMessage =
+        err.response?.data?.message || "Kesalahan saat menambahkan jadwal.";
+      showPopup(errorMessage, "error");
+    } finally {
+      resetForm();
+      setIsAdding(false); // Tutup form
     }
+  };
+
+  const handleEditButtonClick = (item) => {
+    console.log("Data jadwal yang diedit:", item);
+    setSelectedJadwal(item);
+    setForm({
+      hari: item.hari,
+      jam_mulai: item.jam_mulai,
+      jam_selesai: item.jam_selesai,
+      status: item.status, // Menyesuaikan status
+    });
+    setIsAdding(false);
   };
 
   const handleEditJadwal = async (e) => {
@@ -81,6 +116,7 @@ const JadwalPeriksa = () => {
 
     if (form.jam_mulai >= form.jam_selesai) {
       showPopup("Jam selesai harus lebih besar dari jam mulai.", "error");
+      setIsAdding(false);
       return;
     }
 
@@ -94,6 +130,7 @@ const JadwalPeriksa = () => {
 
       if (Object.keys(updatedFields).length === 0) {
         showPopup("Tidak ada perubahan data.", "error");
+        setIsAdding(false);
         return;
       }
 
@@ -103,13 +140,18 @@ const JadwalPeriksa = () => {
 
       await axios.put(`/jadwal-periksa/${selectedJadwal.id}`, updatedFields);
 
-      await fetchJadwal(); // Fetch ulang data jadwal
-      resetForm(); // Tutup form
-      setIsAdding(false); // Tutup form setelah berhasil
+      await fetchJadwal(); 
+      resetForm(); 
+      setIsAdding(false);
       showPopup("Jadwal berhasil diperbarui!", "success");
     } catch (err) {
-      console.error("Kesalahan saat memperbarui jadwal:", err.response?.data || err.message);
-      showPopup(err.response?.data?.message || "Gagal memperbarui jadwal. Silakan coba lagi.", "error");
+      const errorMessage =
+        err.response?.data?.message || "Kesalahan saat memperbarui jadwal.";
+      showPopup(errorMessage, "error");
+    } finally {
+      resetForm();
+      setIsAdding(false); // Tutup form
+      setSelectedJadwal(null);
     }
   };
 
@@ -121,15 +163,8 @@ const JadwalPeriksa = () => {
     if (dokter) fetchJadwal();
   }, [dokter]);
 
-  const showPopup = (message, type) => {
-    setPopup({ message, type, visible: true });
-    setTimeout(() => {
-      setPopup({ message: "", type: "", visible: false });
-    }, 3000);
-  };
 
-
-
+  
   return (
     <>
     <div className="ml-64">
@@ -138,10 +173,11 @@ const JadwalPeriksa = () => {
       {/* Popup Notification */}
     {popup.visible && (
       <div
-        className={`fixed top-12 -left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-10 py-6 text-lg font-semibold rounded text-white shadow-lg ${
+        className={`fixed right-4 top-4 px-6 py-4 text-lg font-semibold rounded text-white shadow-lg z-50 transition-all duration-300 ${
           popup.type === "success" ? "bg-green-500" : "bg-red-500"
         }`}
       >
+        {console.log("Rendering popup with message:", popup.message)}
         {popup.message}
       </div>
     )}
@@ -170,14 +206,24 @@ const JadwalPeriksa = () => {
             </div>
             <div>
               <label className="block text-sm font-bold mb-2">Hari</label>
-              <input
+              <select
                 type="text"
                 name="hari"
                 value={form.hari}
                 onChange={handleInputChange}
                 className="w-full p-2 border rounded"
                 required
-              />
+              >
+                <option value="" disabled>
+                    Pilih Hari
+                  </option>
+                <option value="senin">Senin</option>
+                <option value="selasa">Selasa</option>
+                <option value="rabu">Rabu</option>
+                <option value="kamis">Kamis</option>
+                <option value="jumat">Jumat</option>
+                <option value="sabtu">Sabtu</option>
+              </select>
             </div>
             <div>
               <label className="block text-sm font-bold mb-2">Jam Mulai</label>
@@ -210,8 +256,11 @@ const JadwalPeriksa = () => {
                 className="w-full p-2 border rounded"
                 required
               >
+                <option value="" disabled>
+                    Pilih Status
+                  </option>
                 <option value="aktif">aktif</option>
-                <option value="non-aktif">tidak aktif</option>
+                <option value="tidak aktif">tidak aktif</option>
               </select>
             </div>
           </div>
@@ -222,11 +271,15 @@ const JadwalPeriksa = () => {
               {isAdding ? "Simpan Jadwal" : "Perbarui Jadwal"}
             </button>
             <button
-              type="button"
-              onClick={() => setIsAdding(false)}
-              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-              Batal
-            </button>
+            type="button"
+            onClick={() => {
+              resetForm();
+              setIsAdding(false);
+              setSelectedJadwal(null);
+            }}
+            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+            Batal
+          </button>
           </div>
         </form>
       )}
@@ -255,11 +308,7 @@ const JadwalPeriksa = () => {
                 <td className="border px-4 py-2">{item.status}</td>
                 <td className="border px-4 py-2 text-center">
                   <button
-                    onClick={() => {
-                      setSelectedJadwal(item);
-                      setForm(item);
-                      setIsAdding(false);
-                    }}
+                    onClick={() => handleEditButtonClick(item)}
                     className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 mr-2">
                     <FontAwesomeIcon icon={faEdit} />
                   </button>
