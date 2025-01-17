@@ -204,11 +204,17 @@ const DaftarPoliPasien = () => {
       </div>
 
       {showPopup && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded shadow-lg w-1/3">
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center h-full">
+          <div className="bg-white p-6 rounded shadow-lg w-1/3 h-full">
             <h2 className="text-xl font-bold mb-4">Daftar Poli</h2>
             {error && <div className="bg-red-500 text-white p-2 mb-4">{error}</div>}
             <form onSubmit={handleSubmit}>
+            <div>
+              <label className="block text-sm font-bold">No RM</label>
+              <p className="mt-2 text-gray-800 bg-gray-100 px-4 py-2 rounded-lg">
+                {pasien.no_rm}
+              </p>
+            </div>
               <div className="mb-4">
                 <label className="block font-bold mb-2">Pilih Poli</label>
                 <select
